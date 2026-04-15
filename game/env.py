@@ -2,6 +2,11 @@ from game.bird import Bird
 from game.pipe import Pipe
 from typing import Tuple
 
+import pygame
+
+pygame.mixer.init()
+die_sound = pygame.mixer.Sound("assets/sound.wav")
+
 class FlappyEnv:
     def __init__(self, width: int, height: int, render: bool = False):
         self.width = width
@@ -42,11 +47,11 @@ class FlappyEnv:
         
         reward -= abs(self.bird.vel) * 0.01
         
-        if self.pipe.collide(self.bird):
-            return self.get_state(), -20.0, True
-        
-        if self.bird.y <= 0 or self.bird.y >= self.height:
-            return self.get_state(), -20.0, True
+        if self.pipe.collide(self.bird) or self.bird.y <= 0 or self.bird.y >= self.height:
+          if self.render:
+            die_sound.play()
+            pygame.time.delay(150)
+          return self.get_state(), -20.0, True
         
         if not self.pipe.passed and self.pipe.x + self.pipe.width < self.bird.x:
             self.pipe.passed = True
